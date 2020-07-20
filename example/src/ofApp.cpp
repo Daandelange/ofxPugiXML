@@ -32,7 +32,7 @@ void ofApp::setup()
 
     std::string buffer = ofBufferFromFile("message.xml").getText();
 
-    pugi::xml_parse_result result = doc.load(buffer.c_str());
+    pugi::xml_parse_result result = doc.load_string(buffer.c_str());
 
     if (result)
     {
