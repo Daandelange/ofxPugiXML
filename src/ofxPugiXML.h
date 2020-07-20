@@ -25,7 +25,4 @@
 
 #pragma once
 
-
-#include <deque>
-#include "pugiconfig.hpp"
 #include "pugixml.hpp"
