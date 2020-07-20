@@ -29,7 +29,7 @@ common:
 	# include search paths, this will be usually parsed from the file system
 	# but if the addon or addon libraries need special search paths they can be
 	# specified here separated by spaces or one per line using +=
-	ADDON_INCLUDES = src/%
+	ADDON_INCLUDES = src
 	ADDON_INCLUDES += libs/pugixml/src/%
 	
 	# any special flag that should be passed to the compiler when using this
@@ -78,8 +78,8 @@ common:
 	ADDON_INCLUDES_EXCLUDE += libs/pugixml/scripts/%
 	ADDON_INCLUDES_EXCLUDE += libs/pugixml/tests/%
 
-	ADDON_SOURCES_EXCLUDE = libs/%
-	ADDON_SOURCES_EXCLUDE += libs/pugixml/docs/samples/%
+	#ADDON_SOURCES_EXCLUDE = libs/%
+	ADDON_SOURCES_EXCLUDE = libs/pugixml/docs/samples/%
 	ADDON_SOURCES_EXCLUDE += libs/pugixml/scripts/%
 	ADDON_SOURCES_EXCLUDE += libs/pugixml/tests/%
 	
