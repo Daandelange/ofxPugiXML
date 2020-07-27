@@ -36,4 +36,7 @@ public:
     void setup();
     void draw();
 
+
+    ofxPugiXML      XML;
+
 };

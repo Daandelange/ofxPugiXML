@@ -28,7 +28,7 @@
 
 void ofApp::setup()
 {
-    pugi::xml_document doc;
+    /*pugi::xml_document doc;
 
     std::string buffer = ofBufferFromFile("message.xml").getText();
 
@@ -49,6 +49,27 @@ void ofApp::setup()
         ofLogError("ofApp::setup") << "Error description: " << result.description();
         ofLogError("ofApp::setup") << "Error offset: " << result.offset << " (error at [..." << (result.offset) << "]";
         ofLogNotice("ofApp::setup") << "   Body: " << result.description();
+    }*/
+
+    XML.load("message.xml");
+
+    if(XML.isFileLoaded){
+        if(XML.pushTag("message")){
+
+            ofLogNotice("ofApp::setup") << "     To: " << XML.getValue("to","");
+            ofLogNotice("ofApp::setup") << "   From: " << XML.getValue("from","");
+            ofLogNotice("ofApp::setup") << "Subject: " << XML.getValue("subject","");
+            ofLogNotice("ofApp::setup") << "   Body: " << XML.getValue("body","");
+
+            XML.popTag();
+        }
+
+    }else{
+        std::string buffer = ofBufferFromFile(XML.filepath).getText();
+        ofLogError("ofApp::setup") << "XML [" << buffer << "] parsed with errors.";
+        ofLogError("ofApp::setup") << "Error description: " << XML.isFileLoaded.description();
+        ofLogError("ofApp::setup") << "Error offset: " << XML.isFileLoaded.offset << " (error at [..." << (XML.isFileLoaded.offset) << "]";
+        ofLogNotice("ofApp::setup") << "   Body: " << XML.isFileLoaded.description();
     }
 }
 
