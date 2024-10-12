@@ -81,6 +81,7 @@ inline bool ofxPugiXmlRetrieveOfColor(xml_node& _parent, ofFloatColor& _col, con
 }
 
 namespace ofxPugiXml {
+
     // Get Node value
     // Template helper to shorten some code for retrieving values
     template<typename TYPE>
@@ -206,7 +207,7 @@ namespace ofxPugiXml {
         bool ret = true;
         ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_x").c_str(), _value.x);
         ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_y").c_str(), _value.y);
-        return true;
+        return ret;
     }
     template<>
     inline bool getNodeAttribute(pugi::xml_node& _node, const char* _attribute, glm::vec4& _value){
@@ -238,11 +239,12 @@ namespace ofxPugiXml {
     }
     inline int versionMinor(){
         if(PUGIXML_VERSION<=190){
-            return glm::floor(glm::mod(PUGIXML_VERSION, 100)/10);
+            return glm::floor((PUGIXML_VERSION % 100)/10);
         }
-        return glm::floor(glm::mod(PUGIXML_VERSION, 1000)/10);
+        return glm::floor((PUGIXML_VERSION % 1000)/10);
     }
     inline int versionPatch(){
-        return glm::floor(glm::mod(PUGIXML_VERSION, 10));
+        return glm::floor((PUGIXML_VERSION % 10));
     }
-}
+
+} // namespace ofxPugiXml
