@@ -33,199 +33,224 @@
 #include "glm.hpp"
 #include "ofColor.h"
 
+// if defined, don't check for duplicates, speeding up execution times in large trees.
+//#define ofxPugiXML_NODUPLICATES_CHECKS
 
 using namespace pugi;
 
-// Stores a vector in a node
-// Returns the created node
-inline xml_node ofxPugiXmlAppendVec2Node(xml_node& _parent, const glm::vec2& _vec, const char* _name="pos"){
-    xml_node vecNode =_parent.append_child(_name);
-    vecNode.append_attribute("x").set_value(_vec.x);
-    vecNode.append_attribute("y").set_value(_vec.y);
-    return vecNode;
-}
-
-// Adds the position to the node as an attribute
-// Returns the modified node
-inline xml_node ofxPugiXmlAppendVec2Attr(xml_node& _node, const glm::vec2& _vec, const char* _nameX="pos-x", const char* _nameY="pos-y"){
-    _node.append_attribute(_nameX).set_value(_vec.x);
-    _node.append_attribute(_nameY).set_value(_vec.y);
-    return _node;
-}
-
-inline glm::vec2 ofxPugiXmlGetVec2FromNodeAttr(xml_node& _node, const char* _xName="x", const char* _yName="y" ){
-    return glm::vec2(
-        _node.attribute(_xName).as_float(),
-        _node.attribute(_yName).as_float()
-    );
-}
-
-inline xml_node ofxPugiXmlAppendOfColor(xml_node& _parent, const ofFloatColor& _col, const char* _name){
-    xml_node colNode =_parent.append_child(_name);
-    colNode.append_attribute("r").set_value(_col.r);
-    colNode.append_attribute("g").set_value(_col.g);
-    colNode.append_attribute("b").set_value(_col.b);
-    colNode.append_attribute("a").set_value(_col.a);
-    return colNode;
-}
-
-inline bool ofxPugiXmlRetrieveOfColor(xml_node& _parent, ofFloatColor& _col, const char* _childName){
-    if(pugi::xml_node _cNode = _parent.child(_childName)){
-        _col.r = _cNode.attribute("r").as_float();
-        _col.g = _cNode.attribute("g").as_float();
-        _col.b = _cNode.attribute("b").as_float();
-        _col.a = _cNode.attribute("a").as_float();
-        return true;
-    }
-    return false;
-}
 
 namespace ofxPugiXml {
+    // Helpers to return the existing attr/node or create a new one.
+    // Note: creates lots of comparisons, don't use if your store lots of data !
+    inline pugi::xml_attribute getOrAppendAttribute(pugi::xml_node& _node, const char* _attrName){
+#ifdef ofxPugiXML_NODUPLICATES_CHECKS
+        return _node.append_attribute(_attrName);
+#else
+        pugi::xml_attribute attr = _node.attribute(_attrName);
+        if(!attr) attr = _node.append_attribute(_attrName);
+        return attr;
+#endif
+    }
+    inline pugi::xml_node getOrAppendNode(pugi::xml_node& _parentNode, const char* _nodeName){
+#ifdef ofxPugiXML_NODUPLICATES_CHECKS
+        return _parentNode.append_child(_attrName);
+#else
+        pugi::xml_node node = _parentNode.child(_nodeName);
+        if(!node) node = _parentNode.append_child(_nodeName);
+        return node;
+#endif
+    }
 
-    // Get Node value
+    // Retrieve a variable from a node's text value (or attributes for complex data)
     // Template helper to shorten some code for retrieving values
     template<typename TYPE>
-    inline TYPE getNodeValue(pugi::xml_node& _node);
+    inline bool getNodeValue(pugi::xml_node& _node, TYPE& _value);
+
     template<>
-    inline float getNodeValue(pugi::xml_node& _node){
-        return _node.text().as_float();
+    inline bool getNodeValue(pugi::xml_node& _node, float& _value){
+        if(!_node) return false;
+        _value = _node.text().as_float(_value);
+        return true;
     }
     template<>
-    inline int getNodeValue(pugi::xml_node& _node){
-        return _node.text().as_int();
+    inline bool getNodeValue(pugi::xml_node& _node, int& _value){
+        if(!_node) return false;
+        _value = _node.text().as_int(_value);
+        return true;
     }
     template<>
-    inline unsigned int getNodeValue(pugi::xml_node& _node){
-        return _node.text().as_uint();
+    inline bool getNodeValue(pugi::xml_node& _node, unsigned int& _value){
+        if(!_node) return false;
+        _value = _node.text().as_uint(_value);
+        return true;
     }
     template<>
-    inline bool getNodeValue(pugi::xml_node& _node){
-        return _node.text().as_bool();
+    inline bool getNodeValue(pugi::xml_node& _node, bool& _value){
+        if(!_node) return false;
+        _value = _node.text().as_bool(_value);
+        return true;
     }
     template<>
-    inline double getNodeValue(pugi::xml_node& _node){
-        return _node.text().as_double();
+    inline bool getNodeValue(pugi::xml_node& _node, double& _value){
+        if(!_node) return false;
+        _value = _node.text().as_double(_value);
+        return true;
     }
     template<>
-    inline long long getNodeValue(pugi::xml_node& _node){
-        return _node.text().as_llong();
+    inline bool getNodeValue(pugi::xml_node& _node, long long& _value){
+        if(!_node) return false;
+        _value = _node.text().as_llong(_value);
+        return true;
     }
     template<>
-    inline const char* getNodeValue(pugi::xml_node& _node){
-        return _node.text().as_string();
+    inline bool getNodeValue(pugi::xml_node& _node, const char*& _value){
+        if(!_node) return false;
+        _value = _node.text().as_string(_value);
+        return true;
     }
     template<>
-    inline unsigned long long getNodeValue(pugi::xml_node& _node){
-        return _node.text().as_ullong();
-    }
-    template<>
-    inline ofFloatColor getNodeValue(pugi::xml_node& _node){
-        ofFloatColor col;
-        if(_node){
-            col.r = _node.attribute("r").as_float();
-            col.g = _node.attribute("g").as_float();
-            col.b = _node.attribute("b").as_float();
-            col.a = _node.attribute("a").as_float();
-        }
-        return col;
-    }
-    template<>
-    inline glm::vec2 getNodeValue(pugi::xml_node& _node){
-        glm::vec2 vec;
-        if(_node){
-            vec.x = _node.attribute("x").as_float();
-            vec.y = _node.attribute("y").as_float();
-        }
-        return vec;
+    inline bool getNodeValue(pugi::xml_node& _node, unsigned long long& _value){
+        if(!_node) return false;
+        _value = _node.text().as_ullong(_value);
+        return true;
     }
 
 
-    // Getter for attribute values
+    // Getter for single attribute values
+    // Helps with templated code to retrieve a value from an attribute
     template<typename TYPE>
-    inline TYPE getAttributeValue(pugi::xml_attribute& _attr);
+    inline bool getAttributeValue(pugi::xml_attribute& _attr, TYPE& _value);
     // Base type specialisations
     template<>
-    inline float getAttributeValue(pugi::xml_attribute& _attr){
-        return _attr.as_float();
+    inline bool getAttributeValue(pugi::xml_attribute& _attr, float& _value){
+        if(_attr) _value = _attr.as_float(_value);
+        return _attr;
     }
     template<>
-    inline int getAttributeValue(pugi::xml_attribute& _attr){
-        return _attr.as_int();
+    inline bool getAttributeValue(pugi::xml_attribute& _attr, int& _value){
+        if(_attr) _value = _attr.as_int(_value);
+        return _attr;
     }
     template<>
-    inline bool getAttributeValue(pugi::xml_attribute& _attr){
-        return _attr.as_bool();
+    inline bool getAttributeValue(pugi::xml_attribute& _attr, bool& _value){
+        if(_attr) _value = _attr.as_bool(_value);
+        return _attr;
     }
     template<>
-    inline unsigned int getAttributeValue(pugi::xml_attribute& _attr){
-        return _attr.as_uint();
+    inline bool getAttributeValue(pugi::xml_attribute& _attr, unsigned int& _value){
+        if(_attr) _value = _attr.as_uint(_value);
+        return _attr;
     }
     template<>
-    inline double getAttributeValue(pugi::xml_attribute& _attr){
-        return _attr.as_double();
+    inline bool getAttributeValue(pugi::xml_attribute& _attr, double& _value){
+        if(_attr) _value = _attr.as_double(_value);
+        return _attr;
     }
 
-    // Works for base types
+    // Todo: make this private ?
+    inline std::string formatAttrName(const char* _baseName, const char* _end=nullptr, const char* separator="_"){
+        // Insert base
+        std::string name = std::string(_baseName==nullptr?"":_baseName);
+        // If base exists, add separator
+        if( _end!=nullptr && std::strlen(_end)>0 ){
+            // Only separate if base exists
+            if(name.length()>0 && std::strlen(separator)>0) name.append(separator);
+            name.append(_end);
+        }
+        // Ensure we don't return an empty string
+        if(name.length()==0) name.append("value");
+        return name;
+    }
+
+    // Set a variable as node attributes
+    // Default template for standard types with only 1 value to store
     template<typename TYPE>
-    inline void setNodeAttribute(pugi::xml_node& _node, const char* _attribute, const TYPE& _value){
-        _node.append_attribute(_attribute).set_value(_value);
+    inline void setNodeAttribute(pugi::xml_node& _node, const char* _attributeName, const TYPE& _value){
+        if(_attributeName==nullptr || std::strlen(_attributeName)==0) _attributeName = "value";
+        pugi::xml_attribute attr = getOrAppendAttribute(_node, _attributeName);
+        attr.set_value(_value);
     }
     // Custom type implementations
     template<>
-    inline void setNodeAttribute(pugi::xml_node& _node, const char* _attribute, const glm::vec2& _value){
-        _node.append_attribute(std::string(_attribute).append("_x").c_str()).set_value(_value.x);
-        _node.append_attribute(std::string(_attribute).append("_y").c_str()).set_value(_value.y);
+    inline void setNodeAttribute(pugi::xml_node& _node, const char* _attributeName, const glm::vec2& _value){
+        setNodeAttribute(_node, formatAttrName(_attributeName, "x").c_str(), _value.x);
+        setNodeAttribute(_node, formatAttrName(_attributeName, "y").c_str(), _value.y);
     }
     template<>
-    inline void setNodeAttribute(pugi::xml_node& _node, const char* _attribute, const glm::vec4& _value){
-        _node.append_attribute(std::string(_attribute).append("_x").c_str()).set_value(_value.x);
-        _node.append_attribute(std::string(_attribute).append("_y").c_str()).set_value(_value.y);
-        _node.append_attribute(std::string(_attribute).append("_z").c_str()).set_value(_value.z);
-        _node.append_attribute(std::string(_attribute).append("_w").c_str()).set_value(_value.w);
+    inline void setNodeAttribute(pugi::xml_node& _node, const char* _attributeName, const glm::vec4& _value){
+        setNodeAttribute(_node, formatAttrName(_attributeName, "x").c_str(), _value.x);
+        setNodeAttribute(_node, formatAttrName(_attributeName, "y").c_str(), _value.y);
+        setNodeAttribute(_node, formatAttrName(_attributeName, "z").c_str(), _value.z);
+        setNodeAttribute(_node, formatAttrName(_attributeName, "w").c_str(), _value.w);
     }
     template<>
-    inline void setNodeAttribute(pugi::xml_node& _node, const char* _attribute, const ofFloatColor& _value){
-        _node.append_attribute(std::string(_attribute).append("_r").c_str()).set_value(_value.r);
-        _node.append_attribute(std::string(_attribute).append("_g").c_str()).set_value(_value.g);
-        _node.append_attribute(std::string(_attribute).append("_b").c_str()).set_value(_value.b);
-        _node.append_attribute(std::string(_attribute).append("_a").c_str()).set_value(_value.a);
+    inline void setNodeAttribute(pugi::xml_node& _node, const char* _attributeName, const ofFloatColor& _value){
+        setNodeAttribute(_node, formatAttrName(_attributeName, "r").c_str(), _value.r);
+        setNodeAttribute(_node, formatAttrName(_attributeName, "g").c_str(), _value.g);
+        setNodeAttribute(_node, formatAttrName(_attributeName, "b").c_str(), _value.b);
+        setNodeAttribute(_node, formatAttrName(_attributeName, "a").c_str(), _value.a);
     }
 
-    // Getter
+    // Retrieve a variable from node attributes
     // Base template (for base types, have to be specialised)
     template<typename TYPE>
-    inline bool getNodeAttribute(pugi::xml_node& _node, const char* _attribute, TYPE& _value){
-        if(pugi::xml_attribute attr = _node.attribute(_attribute)){
-            _value = getAttributeValue<TYPE>(attr);
-            return true;
+    inline bool getNodeAttributeValue(pugi::xml_node& _node, const char* _attributeName, TYPE& _value){
+        if(pugi::xml_attribute attr = _node.attribute(_attributeName)){
+            return getAttributeValue<TYPE>(attr, _value);
         }
         return false;
     }
     // Custom type implementations
     template<>
-    inline bool getNodeAttribute(pugi::xml_node& _node, const char* _attribute, glm::vec2& _value){
+    inline bool getNodeAttributeValue(pugi::xml_node& _node, const char* _attributeName, glm::vec2& _value){
         bool ret = true;
-        ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_x").c_str(), _value.x);
-        ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_y").c_str(), _value.y);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "x").c_str(), _value.x);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "y").c_str(), _value.y);
         return ret;
     }
     template<>
-    inline bool getNodeAttribute(pugi::xml_node& _node, const char* _attribute, glm::vec4& _value){
+    inline bool getNodeAttributeValue(pugi::xml_node& _node, const char* _attributeName, glm::vec4& _value){
         bool ret = true;
-        ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_x").c_str(), _value.x);
-        ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_y").c_str(), _value.y);
-        ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_z").c_str(), _value.z);
-        ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_w").c_str(), _value.w);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "x").c_str(), _value.x);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "y").c_str(), _value.y);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "z").c_str(), _value.z);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "w").c_str(), _value.w);
         return ret;
     }
     template<>
-    inline bool getNodeAttribute(pugi::xml_node& _node, const char* _attribute, ofFloatColor& _value){
+    inline bool getNodeAttributeValue(pugi::xml_node& _node, const char* _attributeName, ofFloatColor& _value){
         bool ret = true;
-        ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_r").c_str(), _value.r);
-        ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_g").c_str(), _value.g);
-        ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_b").c_str(), _value.b);
-        ret *= getNodeAttribute<float>(_node, std::string(_attribute).append("_a").c_str(), _value.a);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "r").c_str(), _value.r);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "g").c_str(), _value.g);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "b").c_str(), _value.b);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "a").c_str(), _value.a);
         return ret;
+    }
+
+    // Functions below might depreciate soon !
+    // Stores a vector in a node, returns the created node
+    template<typename TYPE>
+    inline xml_node setNodeValueToAttribute(xml_node& _parent, const char* _childName, const TYPE& _value, const char* _attrName=""){
+        xml_node tNode = getOrAppendNode(_parent, _childName);//_parent.append_child(_childName);
+        setNodeAttribute(tNode, _attrName, _value);
+        return tNode;
+    }
+
+    template<typename TYPE>
+    inline bool getNodeValueFromAttribute(xml_node& _parent, const char* _childName, TYPE& _value, const char* _attrName=""){
+        if(pugi::xml_node tNode = _parent.child(_childName)){
+            return getNodeAttributeValue(tNode, _attrName, _value);
+        }
+        return false;
+    }
+
+    template<typename TYPE>
+    bool getNodeValue(xml_node& _parent, const char* _childName, TYPE& _value){
+        if(pugi::xml_node tNode = _parent.child(_childName)){
+            getNodeValue(tNode, _value);
+            return true;
+        }
+        return false;
     }
 
     // Version getters
