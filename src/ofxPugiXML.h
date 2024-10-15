@@ -38,7 +38,7 @@
 #endif
 
 // Todo : How could we include a more recent version of pugiXML than the one shipped within OpenFrameworks ?
-// OpenFrameworks 0.9.0 comes without PugiXML
+// OpenFrameworks 0.8.0 comes without PugiXML
 // OpenFrameworks 0.9.0 comes with PugiXML 1.7.0
 // OpenFrameworks 0.11.0 comes with PugiXML 1.9.0
 // OpenFrameworks 0.12.0 comes with PugiXML 1.9.0
