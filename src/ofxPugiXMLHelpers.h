@@ -35,6 +35,7 @@
 #include "glm/vec4.hpp"
 #include "ofColor.h"
 #include <type_traits>
+#include <cstring> // std::strlen
 
 // if defined, don't check for duplicates, speeding up execution times in large trees.
 //#define ofxPugiXML_NODUPLICATES_CHECKS
