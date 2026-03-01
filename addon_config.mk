@@ -16,10 +16,10 @@
 
 meta:
 	ADDON_NAME = ofxPugiXML
-	ADDON_DESCRIPTION = A thin wrapper for pugixml http://pugixml.org.
+	ADDON_DESCRIPTION = A thin wrapper for pugixml https://pugixml.org.
 	ADDON_AUTHOR = bakercp daandelange d3cod3
 	ADDON_TAGS = "xml" "xpath" "utilities" "bridges"
-	ADDON_URL = http://github.com/bakercp/ofxPugiXML
+	ADDON_URL = https://github.com/Daandelange/ofxPugiXML
 
 common:
 	# dependencies with other addons, a list of them separated by spaces 
@@ -30,8 +30,31 @@ common:
 	# but if the addon or addon libraries need special search paths they can be
 	# specified here separated by spaces or one per line using +=
 	ADDON_INCLUDES = src
-	ADDON_INCLUDES += libs/pugixml/src/%
+
+        # Exclude useless submodule stuff
+        ADDON_INCLUDES_EXCLUDE = libs/pugixml/docs/%
+        ADDON_INCLUDES_EXCLUDE += libs/pugixml/docs/samples/%
+        ADDON_INCLUDES_EXCLUDE += libs/pugixml/scripts/%
+        ADDON_INCLUDES_EXCLUDE += libs/pugixml/tests/%
+
+        ADDON_SOURCES_EXCLUDE = libs/pugixml/docs/samples/%
+        ADDON_SOURCES_EXCLUDE += libs/pugixml/scripts/%
+        ADDON_SOURCES_EXCLUDE += libs/pugixml/tests/%
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        # Here you can choose between libPugiXML within Openframeworks or ofxPugiXML (updated).
+        # Uncomment either 1 block OR the other to switch.
+
+        # Block1: Use the Openframeworks' libPugiXML
+        # Use this block for OF_v0.8.0 & below !
+        # ADDON_SOURCES_EXCLUDE += libs/%
+        # ADDON_INCLUDES_EXCLUDE += libs/%
+
+        # Block2: Use the ofxPugiXML's libPugiXML
+        ADDON_INCLUDES += libs/pugixml/src/%
 	
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 	# any special flag that should be passed to the compiler when using this
 	# addon
 	# ADDON_CFLAGS =
@@ -72,16 +95,6 @@ common:
 	# when parsing the file system looking for libraries exclude this for all or
 	# a specific platform
 	# ADDON_LIBS_EXCLUDE =
-
-	ADDON_INCLUDES_EXCLUDE = libs/pugixml/docs/%
-	ADDON_INCLUDES_EXCLUDE += libs/pugixml/docs/samples/%
-	ADDON_INCLUDES_EXCLUDE += libs/pugixml/scripts/%
-	ADDON_INCLUDES_EXCLUDE += libs/pugixml/tests/%
-
-	#ADDON_SOURCES_EXCLUDE = libs/%
-	ADDON_SOURCES_EXCLUDE = libs/pugixml/docs/samples/%
-	ADDON_SOURCES_EXCLUDE += libs/pugixml/scripts/%
-	ADDON_SOURCES_EXCLUDE += libs/pugixml/tests/%
 	
 	# binary libraries, these will be usually parsed from the file system but some 
 	# libraries need to passed to the linker in a specific order/

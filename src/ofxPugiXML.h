@@ -1,7 +1,7 @@
 // =============================================================================
 //
 // Copyright (c) 2014 Christopher Baker <http://christopherbaker.net>
-// Copyright (c) 2020-2024 Daan de Lange <https://daandelange.com>
+// Copyright (c) 2020-2026 Daan de Lange <https://daandelange.com>
 // Copyright (c) 2020 Emanuele Mazza aka n3m3da <https://d3cod3.org>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,8 +30,9 @@
 // Before of 0.9.0 PugiXML was not included !
 // OpenFrameworks uses pugiXml for ofxXML since 0.9.0.
 
+#include "ofConstants.h"
 // Clarify where pugiXML comes from.
-#if OF_VERSION_MAJOR <= 8
+#if OF_VERSION_MAJOR == 0 && OF_VERSION_MINOR <= 8
 #pragma message "You're using OpenFrameworks < 0.9.0, you need to comment out the OF9 line in `ofxPugiXML/addon_config.mk`."
 #else
 #pragma message "You're using Openframeworks > 0.9.0, using PugiXML contained within !"
@@ -42,8 +43,15 @@
 // OpenFrameworks 0.9.0 comes with PugiXML 1.7.0
 // OpenFrameworks 0.11.0 comes with PugiXML 1.9.0
 // OpenFrameworks 0.12.0 comes with PugiXML 1.9.0
+// OpenFrameworks 0.12.1 comes with PugiXML 1.14
 
 #include "pugixml.hpp"
+
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+#pragma message "Using PugiXML version " STR(PUGIXML_VERSION)
+#undef STR_HELPER
+#undef STR
 
 // Also include our custom OF glue !
 #include "ofxPugiXMLHelpers.h"
