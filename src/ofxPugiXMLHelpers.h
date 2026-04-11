@@ -36,6 +36,7 @@
 #include "ofColor.h"
 #include <type_traits>
 #include <cstring> // std::strlen
+#include <string>
 
 // if defined, don't check for duplicates, speeding up execution times in large trees.
 //#define ofxPugiXML_NODUPLICATES_CHECKS
@@ -116,6 +117,12 @@ namespace ofxPugiXml {
     inline bool getNodeValue(pugi::xml_node& _node, unsigned long long& _value){
         if(!_node) return false;
         _value = _node.text().as_ullong(_value);
+        return true;
+    }
+    template<>
+    inline bool getNodeValue(pugi::xml_node& _node, std::string& _value){
+        if(!_node) return false;
+        _value = _node.text().as_string(_value.c_str());
         return true;
     }
 
