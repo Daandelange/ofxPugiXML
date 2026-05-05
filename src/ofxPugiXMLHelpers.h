@@ -208,6 +208,13 @@ namespace ofxPugiXml {
         return ret;
     }
     template<>
+    inline bool setNodeAttribute(pugi::xml_node& _node, const char* _attributeName, const glm::ivec2& _value){
+        bool ret = true;
+        ret *= setNodeAttribute(_node, formatAttrName(_attributeName, "x").c_str(), _value.x);
+        ret *= setNodeAttribute(_node, formatAttrName(_attributeName, "y").c_str(), _value.y);
+        return ret;
+    }
+    template<>
     inline bool setNodeAttribute(pugi::xml_node& _node, const char* _attributeName, const glm::vec4& _value){
         bool ret = true;
         ret *= setNodeAttribute(_node, formatAttrName(_attributeName, "x").c_str(), _value.x);
@@ -257,6 +264,13 @@ namespace ofxPugiXml {
         bool ret = true;
         ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "x").c_str(), _value.x,  _defaultValue ? &_defaultValue->x : &_value.x);
         ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "y").c_str(), _value.y,  _defaultValue ? &_defaultValue->y : &_value.y);
+        return ret;
+    }
+    template<>
+    inline bool getNodeAttributeValue(pugi::xml_node& _node, const char* _attributeName, glm::ivec2& _value, const glm::ivec2* _defaultValue){
+        bool ret = true;
+        ret *= getNodeAttributeValue<int>(_node, formatAttrName(_attributeName, "x").c_str(), _value.x,  _defaultValue ? &_defaultValue->x : &_value.x);
+        ret *= getNodeAttributeValue<int>(_node, formatAttrName(_attributeName, "y").c_str(), _value.y,  _defaultValue ? &_defaultValue->y : &_value.y);
         return ret;
     }
     template<>
@@ -323,8 +337,6 @@ namespace ofxPugiXml {
         return getNodeAttributeValue<TYPE>(_node, _attributeName, _value, &_defaultValue);
     }
 
-
-    // Functions below might depreciate soon !
     // Stores a vector in a node, returns the created node
     template<typename TYPE>
     inline xml_node setNodeValueToAttribute(xml_node& _parent, const char* _childName, const TYPE& _value, const char* _attrName=""){
