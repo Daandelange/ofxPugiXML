@@ -32,6 +32,7 @@
 #include "pugixml.hpp"
 //#include "glm.hpp" // of 0.11.2 and below ?
 #include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
 #include "glm/vec4.hpp"
 #include "ofColor.h"
 #include <type_traits>
@@ -208,6 +209,14 @@ namespace ofxPugiXml {
         return ret;
     }
     template<>
+    inline bool setNodeAttribute(pugi::xml_node& _node, const char* _attributeName, const glm::vec3& _value){
+        bool ret = true;
+        ret *= setNodeAttribute(_node, formatAttrName(_attributeName, "x").c_str(), _value.x);
+        ret *= setNodeAttribute(_node, formatAttrName(_attributeName, "y").c_str(), _value.y);
+        ret *= setNodeAttribute(_node, formatAttrName(_attributeName, "z").c_str(), _value.z);
+        return ret;
+    }
+    template<>
     inline bool setNodeAttribute(pugi::xml_node& _node, const char* _attributeName, const glm::ivec2& _value){
         bool ret = true;
         ret *= setNodeAttribute(_node, formatAttrName(_attributeName, "x").c_str(), _value.x);
@@ -264,6 +273,14 @@ namespace ofxPugiXml {
         bool ret = true;
         ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "x").c_str(), _value.x,  _defaultValue ? &_defaultValue->x : &_value.x);
         ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "y").c_str(), _value.y,  _defaultValue ? &_defaultValue->y : &_value.y);
+        return ret;
+    }
+    template<>
+    inline bool getNodeAttributeValue(pugi::xml_node& _node, const char* _attributeName, glm::vec3& _value, const glm::vec3* _defaultValue){
+        bool ret = true;
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "x").c_str(), _value.x,  _defaultValue ? &_defaultValue->x : &_value.x);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "y").c_str(), _value.y,  _defaultValue ? &_defaultValue->y : &_value.y);
+        ret *= getNodeAttributeValue<float>(_node, formatAttrName(_attributeName, "z").c_str(), _value.z,  _defaultValue ? &_defaultValue->z : &_value.z);
         return ret;
     }
     template<>
